@@ -32,7 +32,35 @@ def bipolar_modulation (bit_stream):
 
     return signal,time
 
+#Jose Artur - 180020439
+def nrz_modulation(bit_stream):
+    
+    signal = []
+    for bit in bit_stream:
+        if bit == 1:
+            signal.extend([1])   # +V para 1
+        else:
+            signal.extend([-1])  # -V para 0
 
+    time = np.arange(len(signal))   # Eixo do Tempo
+    
+    return signal, time
+
+def ask_modulation(amplitude, frequency, bit_stream):
+
+    signal_size = len(bit_stream)
+    signal = np.zeros(signal_size * 100)  
+
+    for i in range(signal_size):
+        if bit_stream[i] == 1 : 
+            for j in range(100):
+                signal[(i * 100) + j] = amplitude * np.sin(2 * np.pi * frequency * j / 100)
+        else:
+            for j in range(100):
+                signal[(i * 100) + j] = 0
+
+    time = np.arange(len(signal))   # Eixo do Tempo
+    return signal, time
 
 def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
@@ -45,6 +73,8 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         signal,time = manchester_modulation(binary_sequence)
     elif(digital_modulation == "Bipolar"):
         signal,time = bipolar_modulation(binary_sequence)
+    elif(digital_modulation == "ASK - Amplitude Shift Key"):
+        signal,time = ask_modulation(binary_sequence)
 
     plt.figure(figsize=(8,4))
     plt.plot(time, signal, drawstyle="steps-pre")
@@ -76,9 +106,6 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
     plt.close()
               
 ''' 
-
-
-
 
 
 
