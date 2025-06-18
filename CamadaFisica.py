@@ -59,8 +59,7 @@ def ask_modulation(amplitude, frequency, bit_stream):
             for j in range(100):
                 signal[(i * 100) + j] = 0
 
-    time = np.arange(len(signal))   # Eixo do Tempo
-    return signal, time
+    return signal
 
 def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
@@ -73,8 +72,6 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         signal,time = manchester_modulation(binary_sequence)
     elif(digital_modulation == "Bipolar"):
         signal,time = bipolar_modulation(binary_sequence)
-    elif(digital_modulation == "ASK - Amplitude Shift Key"):
-        signal,time = ask_modulation(binary_sequence)
 
     plt.figure(figsize=(8,4))
     plt.plot(time, signal, drawstyle="steps-pre")
@@ -86,29 +83,26 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         plt.axvline(i,color="black", linestyle="--",linewidth=0.5)
     plt.show()
     plt.close()
-'''
+
     # Escolhendo a modulação por Portadora
     if (analogic_modulation == "ASK"):
-        analogic_signal=ask_modulation()
-    elif(analogic_modulation == "FSK"):
-        analogic_signal=fsk_modulation()
-    elif(analogic_modulation == "8QAM"):
-        analogic_signal=qam8_modulation()
+        analogic_signal=ask_modulation(1, 1, binary_sequence)
+    #elif(analogic_modulation == "FSK"):
+    #    analogic_signal=fsk_modulation()
+    #elif(analogic_modulation == "8QAM"):
+    #    analogic_signal=qam8_modulation()
 
     plt.figure(figsize=(8,4))
     plt.plot(analogic_signal)
     plt.title(f"Sinal modulado por {analogic_modulation}")
     plt.xlabel("Amostras")
     plt.ylabel("Amplitude")
-    for i in time:
-        plt.axvline(i,color="black", linestyle="--",linewidth=0.5)
     plt.show()
     plt.close()
-              
-''' 
+
 
 
 
 
 bin="0101010001010101010101"
-main("Bipolar",None,bin)
+main(None,"ASK",bin)
