@@ -73,16 +73,17 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
     elif(digital_modulation == "Bipolar"):
         signal,time = bipolar_modulation(binary_sequence)
 
-    plt.figure(figsize=(8,4))
-    plt.plot(time, signal, drawstyle="steps-pre")
-    plt.title(f"Modulação Digital {digital_modulation}")
-    plt.xlabel("Tempo")
-    plt.ylabel("Amplitude")
-    plt.xticks(np.arange(0,len(time),1))
-    for i in time:
-        plt.axvline(i,color="black", linestyle="--",linewidth=0.5)
-    plt.show()
-    plt.close()
+    if(digital_modulation!= None):
+        plt.figure(figsize=(8,4))
+        plt.plot(time, signal, drawstyle="steps-pre")
+        plt.title(f"Modulação Digital {digital_modulation}")
+        plt.xlabel("Tempo")
+        plt.ylabel("Amplitude")
+        plt.xticks(np.arange(0,len(time),1))
+        for i in time:
+            plt.axvline(i,color="black", linestyle="--",linewidth=0.5)
+        plt.show()
+        plt.close()
 
     # Escolhendo a modulação por Portadora
     if (analogic_modulation == "ASK"):
@@ -91,14 +92,14 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
     #    analogic_signal=fsk_modulation()
     #elif(analogic_modulation == "8QAM"):
     #    analogic_signal=qam8_modulation()
-
-    plt.figure(figsize=(8,4))
-    plt.plot(analogic_signal)
-    plt.title(f"Sinal modulado por {analogic_modulation}")
-    plt.xlabel("Amostras")
-    plt.ylabel("Amplitude")
-    plt.show()
-    plt.close()
+    if(analogic_modulation != None):
+        plt.figure(figsize=(8,4))
+        plt.plot(analogic_signal)
+        plt.title(f"Sinal modulado por {analogic_modulation}")
+        plt.xlabel("Amostras")
+        plt.ylabel("Amplitude")
+        plt.show()
+        plt.close()
 
 
 
