@@ -61,6 +61,24 @@ def ask_modulation(amplitude, frequency, bit_stream):
 
     return signal
 
+#Henrique Izar - 222026985
+def fsk_modulation(amplitude, frequency_1, frequency_2, bit_stream):
+    signal_size = len(bit_stream)
+    signal = np.zeros(signal_size*100)
+
+    for i in range(signal_size):
+        if bit_stream[i] ==1:
+            for j in range(100):
+                signal[((i)*100) + j] = amplitude * np.sin(2 * np.pi * frequency_1 * j / 100)
+        else:
+            for j in range(100):
+                signal[((i)*100) + j] = amplitude * np.sin(2 * np.pi * frequency_2 * j / 100)
+    return signal
+            
+
+
+
+
 def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
     binary_sequence =[int(bit) for bit in binary_input]     # Transformar a sequencia de bits em inteiros
@@ -88,8 +106,8 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
     # Escolhendo a modulação por Portadora
     if (analogic_modulation == "ASK"):
         analogic_signal=ask_modulation(1, 1, binary_sequence)
-    #elif(analogic_modulation == "FSK"):
-    #    analogic_signal=fsk_modulation()
+    elif(analogic_modulation == "FSK"):
+        analogic_signal=fsk_modulation(1, 2, 1, binary_sequence)
     #elif(analogic_modulation == "8QAM"):
     #    analogic_signal=qam8_modulation()
     if(analogic_modulation != None):
@@ -106,4 +124,4 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
 
 bin="0101010001010101010101"
-main(None,"ASK",bin)
+main(None,"FSK",bin)
