@@ -77,6 +77,60 @@ def fsk_modulation(amplitude, frequency_1, frequency_2, bit_stream):
             
 
 
+import numpy as np
+
+def qam8_modulation(amplitude_low, amplitude_high, frequency_portadora, bit_stream):
+    #dicionario para as respectivas amplitudes e fases:
+    symbol_map = {
+       
+        "000": (amplitude_low, 0),
+        "001": (amplitude_low, 90),
+        "010": (amplitude_low, 180),
+        "011": (amplitude_low, 270),
+        "100": (amplitude_high, 45),
+        "101": (amplitude_high, 135),
+        "110": (amplitude_high, 225),
+        "111": (amplitude_high, 315)
+    }
+
+
+    # garantindo que o stream de bits seja um múltiplo de 3,
+    #  e se nao for, completar com '0':
+    bits_faltantes = 3 - (len(bit_stream) % 3) if len(bit_stream) % 3 != 0 else 0
+    if bits_faltantes > 0:
+        print(f"Bit stream nao é multiplo de 3. Completando com {bits_faltantes} zeros.")
+        bit_stream.extend([0] * bits_faltantes)
+
+    num_symbols = len(bit_stream) // 3
+    
+    qam_signal = np.zeros(num_symbols * 100)
+
+
+    
+    for i in range(num_symbols):
+        # converte 3 bits para uma string:
+        str_bits = "".join(str(bit) for bit in bit_stream[i*3 : (i+1)*3])
+        
+        # converte grau para radiano:
+        amplitude, grau = symbol_map[str_bits]
+        radianos = np.deg2rad(grau)
+
+        # calcula I e Q para usar na formula S(t)=I(t)⋅cos(2πft)−Q(t)⋅sin(2πft)
+        I = amplitude * np.cos(radianos)
+        Q = amplitude * np.sin(radianos)
+
+        # grafico de onda:
+        for j in range(100):
+            # normaliza tempo de 0 a 1:
+            tempo_normalizado = j / 100
+            
+            # formula: S(t) = I * cos(2pift) - Q * sin(2pift)
+            qam_signal[(i * 100) + j] = \
+                (I * np.cos(2 * np.pi * frequency_portadora * tempo_normalizado)) - \
+                (Q * np.sin(2 * np.pi * frequency_portadora * tempo_normalizado))
+            
+    return qam_signal
+
 
 
 def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
@@ -108,8 +162,10 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         analogic_signal=ask_modulation(1, 1, binary_sequence)
     elif(analogic_modulation == "FSK"):
         analogic_signal=fsk_modulation(1, 2, 1, binary_sequence)
-    #elif(analogic_modulation == "8QAM"):
-    #    analogic_signal=qam8_modulation()
+    
+    elif(analogic_modulation == "8QAM"):
+        analogic_signal = qam8_modulation(0.5, 1.0, 1, binary_sequence)
+    
     if(analogic_modulation != None):
         plt.figure(figsize=(8,4))
         plt.plot(analogic_signal)
@@ -124,4 +180,4 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
 
 bin="0101010001010101010101"
-main(None,"FSK",bin)
+main(None,"8QAM",bin)
