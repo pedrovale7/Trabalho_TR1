@@ -74,10 +74,7 @@ def fsk_modulation(amplitude, frequency_1, frequency_2, bit_stream):
             for j in range(100):
                 signal[((i)*100) + j] = amplitude * np.sin(2 * np.pi * frequency_2 * j / 100)
     return signal
-            
 
-
-import numpy as np
 
 def qam8_modulation(amplitude_low, amplitude_high, frequency_portadora, bit_stream):
     #dicionario para as respectivas amplitudes e fases:
@@ -146,7 +143,7 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         signal,time = bipolar_modulation(binary_sequence)
 
     if(digital_modulation!= None):
-        plt.figure(figsize=(8,4))
+        plt.figure(figsize=(12,4))
         plt.plot(time, signal, drawstyle="steps-pre")
         plt.title(f"Modulação Digital {digital_modulation}")
         plt.xlabel("Tempo")
@@ -161,13 +158,13 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
     if (analogic_modulation == "ASK"):
         analogic_signal=ask_modulation(1, 1, binary_sequence)
     elif(analogic_modulation == "FSK"):
-        analogic_signal=fsk_modulation(1, 2, 1, binary_sequence)
-    
+        analogic_signal=fsk_modulation(1, 2, 1,binary_sequence)
     elif(analogic_modulation == "8QAM"):
-        analogic_signal = qam8_modulation(0.5, 1.0, 1, binary_sequence)
-    
+        analogic_signal=qam8_modulation(0.5, 1.0, 1, binary_sequence)
+
+
     if(analogic_modulation != None):
-        plt.figure(figsize=(8,4))
+        plt.figure(figsize=(10,4))
         plt.plot(analogic_signal)
         plt.title(f"Sinal modulado por {analogic_modulation}")
         plt.xlabel("Amostras")
@@ -179,5 +176,7 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
 
 
+
 bin="0101010001010101010101"
 main(None,"8QAM",bin)
+
