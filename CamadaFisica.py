@@ -75,6 +75,7 @@ def fsk_modulation(amplitude, frequency_1, frequency_2, bit_stream):
                 signal[((i)*100) + j] = amplitude * np.sin(2 * np.pi * frequency_2 * j / 100)
     return signal
 
+
 def qam8_modulation(amplitude_low, amplitude_high, frequency_portadora, bit_stream):
     #dicionario para as respectivas amplitudes e fases:
     symbol_map = {
@@ -128,6 +129,7 @@ def qam8_modulation(amplitude_low, amplitude_high, frequency_portadora, bit_stre
     return qam_signal
 
 
+
 def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
 
     binary_sequence =[int(bit) for bit in binary_input]     # Transformar a sequencia de bits em inteiros
@@ -160,6 +162,7 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
     elif(analogic_modulation == "8QAM"):
         analogic_signal=qam8_modulation(0.5, 1.0, 1, binary_sequence)
 
+
     if(analogic_modulation != None):
         plt.figure(figsize=(10,4))
         plt.plot(analogic_signal)
@@ -170,5 +173,10 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         plt.close()
 
 
-bin="0101010001010101001"
-main("Manchester","ASK",bin)
+
+
+
+
+bin="0101010001010101010101"
+main(None,"8QAM",bin)
+
