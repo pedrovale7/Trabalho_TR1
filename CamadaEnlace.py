@@ -33,8 +33,15 @@ def byte_insertion (text: str):
     # Adiciona a Flag no inicio e no fim nos trem de bits       
     return flag + aux + flag
 
+def bit_parity(binary_sequence):
+    
+    ones = sum(binary_sequence)
+    parity_bit = 0
 
+    if ones % 2 != 0:
+        parity_bit = 1
 
-texto="A~"
-print(byte_insertion(texto))
+    binary_sequence.append(parity_bit)
+
+    return binary_sequence
 
