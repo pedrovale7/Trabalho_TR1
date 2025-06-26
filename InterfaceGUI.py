@@ -42,6 +42,8 @@ class MainWindow(Gtk.Window):
         # Área para gráficos
         self.graph_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.grid.attach(self.graph_box, 3, 0, 100, 80)
+        self.graph_box.set_hexpand(True)
+        self.graph_box.set_vexpand(True)
         
     def create_input_section(self):
         # Label e entrada para mensagem
