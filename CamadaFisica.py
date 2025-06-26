@@ -171,12 +171,3 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         plt.ylabel("Amplitude")
         plt.show()
         plt.close()
-
-
-
-
-
-
-bin="0101010001010101010101"
-main(None,"8QAM",bin)
-
