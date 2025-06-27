@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 
 
 def manchester_modulation (bit_stream):
+    #Manchester Unipolar
+    
     signal=[] 
     clock= (0,1)  #Temporizador do Manchester
 
