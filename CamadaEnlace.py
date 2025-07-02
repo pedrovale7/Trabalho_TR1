@@ -9,15 +9,15 @@ def convert_to_bytes(text: str, encoding='utf-8',errors='surrogatepass'):
 
 def character_count (text: str):
 
+    header_size = 8              # Tamanho fixo do Cabeçalho de 8 bits
     binary_sequence = convert_to_bytes(text)
 
-    header=len(binary_sequence)  # Tamanho do Cabeçalho
-    header=bin(header)[2:] 
+    header=len(binary_sequence)  # Calcula o comprimento de bits
+    header=bin(header)[2:].zfill(header_size)
     
-    header = [bit for bit in header]
+    header = [int(bit) for bit in header]
 
     return header + binary_sequence
-
 
 def byte_insertion (text: str):
     binary_sequence = convert_to_bytes(text)
@@ -56,7 +56,6 @@ def bit_insertion (text: str):
         else: count = 0
 
     return flag + aux  + flag
-
 
 def bit_parity(text):
     
