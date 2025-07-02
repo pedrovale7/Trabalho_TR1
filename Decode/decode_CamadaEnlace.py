@@ -32,6 +32,84 @@ def decode_byte_insertion(bits: list[int]):
     
     return text_output
 
+
+#CRC:
+def crc_checksum(data, polinomio):
+    
+    # converte os dados e o polinomio para listas:
+    data_bits = [int(bit) for bit in data]
+    polinomio_bits = [int(bit) for bit in polinomio]
+
+    # grau do polinomio:
+    polinomio_grau = len(polinomio_bits) - 1
+
+    # adiciona um numero de zeros a data igual ao grau do polinomio:
+    data_aumentada = data_bits + [0] * polinomio_grau
+
+    # XOR da data com o polinomio
+    # variavel temporaria para nao alterar os dados originais
+    data_atual = list(data_aumentada)
+
+    for i in range(len(data_bits)):
+        # se o primeiro bit for 1, realiza a operação XOR
+        if data_atual[i] == 1:
+            for j in range(len(polinomio_bits)):
+                # XOR do bit atual dos dados com o bit correspondente do polinomio
+                data_atual[i + j] ^= polinomio_bits[j]
+
+    # o CRC é o resto dessa divisao
+    # ou seja, são os últimos 'polinomio_grau' bits
+    crc_resto = data_atual[-polinomio_grau:]
+    return "".join(str(bit) for bit in crc_resto)
+
+def verifica_crc(data_recebida, polinomio):
+    
+    # a verificaçao acontece da mesma forma que o checksum(XOR)
+    # se o resto for tudo 0 significa que está sem erro
+    resto = crc_checksum(data_recebida, polinomio)
+    return all(bit == '0' for bit in resto)
+
+'''
+#TESTE CRC:
+
+msg_original = "1101011011"
+
+# polinômio gerador G(x)= x^8 + x^2 + x + 1 --> [CRC-8]
+crc8_polinomio = "100000111"
+
+print(f"Mensagem original: {msg_original}")
+print(f"Polinomio G(x): {crc8_polinomio}")
+
+
+crc_calculado = crc_checksum(msg_original, crc8_polinomio)
+print(f"CRC Calculado: {crc_calculado}")
+
+# (msg_original + CRC) = mensagem que será transmitida
+msg_a_transmitir = msg_original + crc_calculado
+print(f"Mensagem a ser Transmitida: {msg_a_transmitir}")
+
+#Recepçao:
+
+# Caso 1: sem erros:
+msg_recebida_sem_erro = msg_a_transmitir
+print(f"\n--- Recepção (sem Erros) ---")
+print(f"Mensagem recebida: {msg_recebida_sem_erro}")
+is_correct_sem_erro = verifica_crc(msg_recebida_sem_erro, crc8_polinomio)
+print(f"Dados corretos (sem erro)? {is_correct_sem_erro}")
+
+# Caso 2: com erro (alterando o bit de indice 4):
+index_erro = 4
+msg_recebida_errada_list = list(msg_a_transmitir)
+msg_recebida_errada_list[index_erro] = '1' if msg_recebida_errada_list[index_erro] == '0' else '0'
+msg_recebida_errada = "".join(msg_recebida_errada_list)
+
+print(f"\n--- Recepção (com erros) ---")
+print(f"Mensagem Recebida (com erro no bit {index_erro + 1}): {msg_recebida_errada}")
+is_correct_com_erro = verifica_crc(msg_recebida_errada, crc8_polinomio)
+print(f"Dados Corretos (com erro)? {is_correct_com_erro}")
+
+'''
+
 """
 def decode_bit_insertion(bits:list[int]):
     flag = [0,1,1,1,1,1,1,0]
