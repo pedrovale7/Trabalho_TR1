@@ -56,39 +56,4 @@ def bit_insertion (text: str):
         else: count = 0
 
     return flag + aux  + flag
-
-def bit_parity(text):
-    
-    binary_sequence= convert_to_bytes(text)
-    ones = sum(binary_sequence)
-    parity_bit = 0
-
-    if ones % 2 != 0:
-        parity_bit = 1
-
-    binary_sequence.append(parity_bit)
-
-    return binary_sequence
-
-def hamming(text: str):
-    binary_sequence = convert_to_bytes(text)
-    #Hamming 7/4
-
-    hamming_sequence = []
-    for i in range (0, len(binary_sequence),4):
-        nibble = binary_sequence[i:i+4]
-
-        if len(nibble) < 4 :
-            nibble.extend([0] * (4-len(nibble)))
-
-        # (p1,p2,m3,p4,m5,m6,m7)
-        # (      n0,  ,n1,n2,n3)
-
-        p=  [(nibble[0]^nibble[1]^nibble[3]),
-            (nibble[0]^nibble[2]^nibble[3]),
-            (nibble[1]^nibble[2]^nibble[3])]
-
-        bits= [p[0],p[1],nibble[0],p[2],nibble[1],nibble[2],nibble[3]]
-        hamming_sequence.extend(bits)
-
-    return hamming_sequence
+print(character_count("b"))
