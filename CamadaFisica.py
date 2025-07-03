@@ -11,9 +11,7 @@ def manchester_modulation (bit_stream):
     for bit in bit_stream:
         signal.extend([bit ^ clock[0], bit ^ clock [1]]) #Sinal do bit XOR Sinal do clock
 
-    time=np.arange(len(signal)) #Eixo de Tempo, cada bit gera dois valores
-
-    return signal,time
+    return signal
 
 def bipolar_modulation (bit_stream):
     signal=[]
@@ -30,9 +28,7 @@ def bipolar_modulation (bit_stream):
         else:
             signal.extend([0])      # 0 continua 0
 
-    time = np.arange(len(signal))   # Eixo do Tempo
-
-    return signal,time
+    return signal
 
 #Jose Artur - 180020439
 def nrz_modulation(bit_stream):
@@ -44,9 +40,8 @@ def nrz_modulation(bit_stream):
         else:
             signal.extend([-1])  # -V para 0
 
-    time = np.arange(len(signal))   # Eixo do Tempo
-    
-    return signal, time
+
+    return signal
 
 def ask_modulation(amplitude, frequency, bit_stream):
 
@@ -132,17 +127,18 @@ def qam8_modulation(amplitude_low, amplitude_high, frequency_portadora, bit_stre
 
 
 
-def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
+def main(digital_modulation : str ,analogic_modulation: str, binary_input: list[int]):
 
-    binary_sequence =[int(bit) for bit in binary_input]     # Transformar a sequencia de bits em inteiros
-
+   
     # Escolha do Metodos de Modulação Digital
     if (digital_modulation == "NRZ-Polar"):
-        signal,time = nrz_modulation(binary_sequence)
+        signal = nrz_modulation(binary_input)
     elif (digital_modulation == "Manchester"):
-        signal,time = manchester_modulation(binary_sequence)
+        signal = manchester_modulation(binary_input)
     elif(digital_modulation == "Bipolar"):
-        signal,time = bipolar_modulation(binary_sequence)
+        signal = bipolar_modulation(binary_input)
+
+    time = np.linspace(0, len(binary_input), len(signal), endpoint=False)
 
     if(digital_modulation!= None):
         plt.figure(figsize=(12,4))
@@ -150,19 +146,17 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         plt.title(f"Modulação Digital {digital_modulation}")
         plt.xlabel("Tempo")
         plt.ylabel("Amplitude")
-        plt.xticks(np.arange(0,len(time),1))
-        for i in time:
-            plt.axvline(i,color="black", linestyle="--",linewidth=0.5)
         plt.show()
         plt.close()
 
+
     # Escolhendo a modulação por Portadora
     if (analogic_modulation == "ASK"):
-        analogic_signal=ask_modulation(1, 1, binary_sequence)
+        analogic_signal=ask_modulation(1, 1, binary_input)
     elif(analogic_modulation == "FSK"):
-        analogic_signal=fsk_modulation(1, 2, 1,binary_sequence)
+        analogic_signal=fsk_modulation(1, 2, 1,binary_input)
     elif(analogic_modulation == "8QAM"):
-        analogic_signal=qam8_modulation(0.5, 1.0, 1, binary_sequence)
+        analogic_signal=qam8_modulation(0.5, 1.0, 1, binary_input)
 
 
     if(analogic_modulation != None):
@@ -173,3 +167,5 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: str):
         plt.ylabel("Amplitude")
         plt.show()
         plt.close()
+
+main("NRZ-Polar",None,[0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0])
