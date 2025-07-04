@@ -13,6 +13,14 @@ def decode_nrz_polar(bit_stream):
     return demodulate_bit_stream
 
 def decode_manchester(bit_stream):
+    # Adicionando erro:
+    # se erro < 0.1 : flipa o bit
+    for i in range (0, len(bit_stream),2):
+        if random.randint(0,100) <=10:
+            if bit_stream[i:i+1]==[0,1]:
+                bit_stream[i:i+1]==[1,0]
+            else:
+                bit_stream[i:i+1]==[0,1]
 
     demodulate_bit_stream=[]
     for bit in range(0,len(bit_stream),2):
