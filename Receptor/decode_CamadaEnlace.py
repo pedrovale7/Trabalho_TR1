@@ -32,7 +32,7 @@ def decode_byte_insertion(bits: list[int]):
     
     return text_output
 
-# Faltando o bit_insertion
+# Faltando o decode_bit_insertion
 
 #CRC:
 def crc_checksum(data, polinomio):
