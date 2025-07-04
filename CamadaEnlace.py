@@ -7,10 +7,9 @@ def convert_to_bytes(text: str, encoding='utf-8',errors='surrogatepass'):
     binary_sequence =[int(bit) for bit in bin_array]
     return binary_sequence
 
-def character_count (text: str):
+def character_count (binary_sequence):
 
     header_size = 8              # Tamanho fixo do Cabeçalho de 8 bits
-    binary_sequence = convert_to_bytes(text)
 
     header=len(binary_sequence)  # Calcula o comprimento de bits
     header=bin(header)[2:].zfill(header_size)
@@ -19,8 +18,7 @@ def character_count (text: str):
 
     return header + binary_sequence
 
-def byte_insertion (text: str):
-    binary_sequence = convert_to_bytes(text)
+def byte_insertion (binary_sequence):
 
     # Flags e Escapes fixos, e lista auxiliar
     flag = [0,1,1,1,1,1,1,0]            #0x7E ~
@@ -39,8 +37,7 @@ def byte_insertion (text: str):
     # Adiciona a Flag no inicio e no fim nos trem de bits       
     return flag + aux + flag
 
-def bit_insertion (text: str):
-    binary_sequence= convert_to_bytes(text)
+def bit_insertion (binary_sequence):
 
     flag = [0,1,1,1,1,1,1,0]        #0x7E
     count = 0
@@ -56,4 +53,3 @@ def bit_insertion (text: str):
         else: count = 0
 
     return flag + aux  + flag
-print(character_count("b"))

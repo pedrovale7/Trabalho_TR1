@@ -40,8 +40,7 @@ def nrz_modulation(bit_stream):
         else:
             signal.extend([-1])  # -V para 0
 
-
-    return signal
+    return signal [+1 -1 +1 -1]
 
 def ask_modulation(amplitude, frequency, bit_stream):
 
@@ -167,5 +166,3 @@ def main(digital_modulation : str ,analogic_modulation: str, binary_input: list[
         plt.ylabel("Amplitude")
         plt.show()
         plt.close()
-
-main("NRZ-Polar",None,[0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0])
