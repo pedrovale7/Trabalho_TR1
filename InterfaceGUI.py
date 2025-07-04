@@ -4,9 +4,9 @@ from gi.repository import Gtk, Gdk, GLib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 import numpy as np
-import sys
 import CamadaFisica as cf
 import CamadaEnlace as ce
+import transmissor as tm
 
 class MainWindow(Gtk.Window):
     def __init__(self):
@@ -118,7 +118,7 @@ class MainWindow(Gtk.Window):
         self.output_text.set_wrap_mode(Gtk.WrapMode.WORD)
         scrolled_window.add(self.output_text)
         
-        self.grid.attach(scrolled_window, 0, 6, 3, 6)
+        self.grid.attach(scrolled_window, 0, 6, 3, 50)
         
     def on_error_check_toggled(self, button):
         self.error_combo.set_sensitive(button.get_active())
@@ -145,14 +145,17 @@ class MainWindow(Gtk.Window):
         
         # Aplicar enquadramento
         if framing_method == "Contagem de caracteres":
-            # Implementar contagem de caracteres
+            framed_data = ce.character_count(binary_sequence)
             pass
         elif framing_method == "Enquadramento com FLAG e byte stuffing":
-            framed_data = ce.byte_insertion(message)
+            framed_data = ce.byte_insertion(binary_sequence)
         elif framing_method == "Enquadramento com FLAG e bit stuffing":
-            # Implementar bit stuffing
+            framed_data = ce.bit_insertion(binary_sequence)
             pass
         
+        #Enviar a mensagem do transmissor para o servidor
+        #tm.startServer(framed_data)
+
         # Aplicar detecção de erros
         if error_detection:
             if error_method == "Bit de paridade":
@@ -161,23 +164,24 @@ class MainWindow(Gtk.Window):
                 # Implementar CRC-32
                 pass
             elif error_method == "Hamming":
-                # Implementar Hamming
+                binary_sequence = ce.hamming(binary_sequence)
                 pass
         
         # Mostrar sequência binária na saída
         buffer = self.output_text.get_buffer()
-        buffer.set_text(f"Mensagem original: {message}\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária: {binary_sequence}\n")
+        buffer.set_text(f"Mensagem original: {message}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária:\n {binary_sequence}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária com enquadramento:\n {framed_data}\n")
         
         # Executar modulações
         if digital_mod:
             signal, time = None, None
             if digital_mod == "NRZ-Polar":
-                signal, time = cf.nrz_modulation(binary_sequence)
+                signal = cf.nrz_modulation(binary_sequence)
             elif digital_mod == "Manchester":
-                signal, time = cf.manchester_modulation(binary_sequence)
+                signal = cf.manchester_modulation(binary_sequence)
             elif digital_mod == "Bipolar":
-                signal, time = cf.bipolar_modulation(binary_sequence)
+                signal = cf.bipolar_modulation(binary_sequence)
             
             if signal is not None:
                 self.plot_digital_signal(signal, time, digital_mod)

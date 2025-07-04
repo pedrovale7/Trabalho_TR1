@@ -1,8 +1,14 @@
-import numpy as np
-import matplotlib as plt
+import random
 
 def decode_nrz_polar(bit_stream):
     
+    for n in range(0, len(bit_stream)):
+        if random.randint(0, 100) <= 10:
+            if bit_stream[n] == 1:
+                bit_stream[n] = 0
+            else:
+                bit_stream[n] = 1
+
     demodulate_bit_stream=[]
     for bit in bit_stream:
         if bit==1:
@@ -23,15 +29,19 @@ def decode_manchester(bit_stream):
 
 def decode_bipolar (bit_stream):
     
+    for n in range(0, len(bit_stream)):
+        if random.randint(0, 100) <= 10:
+            if bit_stream[n] == 1:
+                bit_stream[n] = random.randint(0, -1)
+            else:
+                bit_stream[n] = random.randint(0, 1)
+    
     demodulate_bit_stream=[]
     for bit in bit_stream:
         if bit==1 or bit==-1: demodulate_bit_stream.append(1)       #Se 1 ou -1 --> 1
         else: demodulate_bit_stream.append(0)                       #Se 0 --> 0
 
     return demodulate_bit_stream
-
-
-
 
 def main(digital_demodulation : str ,analogic_demodulation: str, binary_input: str):
 
