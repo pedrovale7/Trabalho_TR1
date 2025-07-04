@@ -33,6 +33,8 @@ def decode_byte_insertion(bits: list[int]):
     return text_output
 
 
+
+
 #CRC:
 def crc_checksum(data, polinomio):
     
@@ -110,37 +112,43 @@ print(f"Dados Corretos (com erro)? {is_correct_com_erro}")
 
 '''
 
-"""
-def decode_bit_insertion(bits:list[int]):
-    flag = [0,1,1,1,1,1,1,0]
-    count=0
-    aux=[]
+#BIT STUFFING:
 
-    #Remove a Flag inicial e final e retorna somente a sequencia binária
-    bits_sequence = [bits[i] for i in range (8,len(bits)-8)]
-    #Remover todos 0s depois de cinco 1s
-    for i in bits_sequence:
-        #aux=bits_sequence[i]
-        if count == 5:
-            if aux == 0:
-                count = 0 
+def decode_bit_insertion(bits:list[int]): 
+    # O transmissor insere um '0' após 5 1s
+    # entao procuraremos 5 '1's seguidos e retiraremos o '0' que os segue
+
+    aux = []
+    count_ones = 0 #contador de '1's
+
+    #remove as flags inicial e final
+    bits_sequence = [bits[i] for i in range (8,len(bits)-8)] 
+
+    i = 0
+    while i < len(bits_sequence):
+        current_bit = bits_sequence[i]
+
+        if current_bit == 1:
+            count_ones += 1
+            aux.append(current_bit) # Adiciona o 1 ao resultado
+        else: # bit atual == 0
+            if count_ones == 5:
+                # se encontramos 5 1's e esse proximo bit é 0, ele é o bit de stuffing, que NÃO é adicionado ao 'aux'
+                # reset na contagem
+                count_ones = 0 
                 i += 1 
-                continue 
-        
-        aux.append(bits_sequence[i])
-        
-        if aux == 1:
-            count += 1
-        else: 
-            count = 0
-        
+                continue
+            else:
+                # nesse caso é um '0' normal, entao ele é add ao 'aux'
+                aux.append(current_bit)
+                count_ones = 0
+
         i += 1
 
-    #Transformar a sequencia binaria de volta em texto
+    # converte a sequencia binaria denovo em texto
     text_output = text_from_bits(aux)
-    
+
     return text_output
 
-print(decode_bit_insertion([0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0]))
-print(decode_bit_insertion([0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0]))
-"""
+print(decode_bit_insertion([0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0])) #A
+print(decode_bit_insertion([0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0]))#~A
