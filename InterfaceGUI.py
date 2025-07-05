@@ -45,6 +45,7 @@ class MainWindow(Gtk.Window):
         # Área para gráficos
         self.graph_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.grid.attach(self.graph_box, 3, 0, 100, 80)
+        self.graph_box.set_hexpand(True)
         
     def create_input_section(self):
         # Label e entrada para mensagem
@@ -52,7 +53,6 @@ class MainWindow(Gtk.Window):
         self.grid.attach(input_label, 0, 0, 1, 1)
         
         self.input_entry = Gtk.Entry()
-        self.input_entry.set_hexpand(True)
         self.grid.attach(self.input_entry, 1, 0, 2, 1)
         
     def create_digital_modulation_section(self):
@@ -94,27 +94,21 @@ class MainWindow(Gtk.Window):
         self.framing_combo.set_active(0)
         self.grid.attach(self.framing_combo, 1, 3, 2, 1)
         
-        # Checkbox para detecção de erros
-        self.error_check = Gtk.CheckButton(label="Adicionar detecção de erros")
-        self.grid.attach(self.error_check, 0, 4, 1, 1)
-        
+        # Label para métodos de enquadramento
+        framing_label = Gtk.Label(label="Método de detecção de erro:")
+        self.grid.attach(framing_label, 0, 4, 1, 1)
+
         # Combo box para seleção de método de detecção
         self.error_combo = Gtk.ComboBoxText()
         self.error_combo.append_text("Bit de paridade")
         self.error_combo.append_text("CRC-32")
         self.error_combo.append_text("Hamming")
         self.error_combo.set_active(0)
-        self.error_combo.set_sensitive(False)
         self.grid.attach(self.error_combo, 1, 4, 2, 1)
-        
-        # Conectar sinal do checkbox
-        self.error_check.connect("toggled", self.on_error_check_toggled)
         
     def create_output_section(self):
         # Scrolled window para a saída
         scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.set_hexpand(True)
-        scrolled_window.set_vexpand(True)
         
         self.output_text = Gtk.TextView()
         self.output_text.set_editable(False)
@@ -123,26 +117,27 @@ class MainWindow(Gtk.Window):
         
         self.grid.attach(scrolled_window, 0, 6, 3, 50)
         
-    def on_error_check_toggled(self, button):
-        self.error_combo.set_sensitive(button.get_active())
-        
     def on_run_clicked(self, button):
+        # Limpar a área de texto ANTES de processar
+        output_buffer = self.output_text.get_buffer()
+        output_buffer.set_text("")
+
         # Obter dados de entrada
         message = self.input_entry.get_text()
         digital_mod = self.digital_combo.get_active_text()
         analog_mod = self.analog_combo.get_active_text()
         framing_method = self.framing_combo.get_active_text()
-        error_detection = self.error_check.get_active()
-        error_method = self.error_combo.get_active_text() if error_detection else None
+        error_method = self.error_combo.get_active_text()
         
         # Limpar área de gráficos
         for child in self.graph_box.get_children():
             self.graph_box.remove(child)
         
         # Processar a mensagem
-        self.process_message(message, digital_mod, analog_mod, framing_method, error_detection, error_method)
+        self.process_message(message, digital_mod, analog_mod, framing_method, error_method)
         
-    def process_message(self, message, digital_mod, analog_mod, framing_method, error_detection, error_method):
+    def process_message(self, message, digital_mod, analog_mod, framing_method, error_method):
+        error_type = None
         # Converter mensagem para bits
         binary_sequence = ce.convert_to_bytes(message)
         
@@ -157,15 +152,14 @@ class MainWindow(Gtk.Window):
             pass
         
         # Aplica o formato para detecção e correção de erro
-        if error_detection:
-            if error_method == "Bit de paridade":
-                framed_data = ce.bit_parity(framed_data)
-            elif error_method == "CRC-32":
-                framed_data = ce.crc_checksum(framed_data)
-                pass
-            elif error_method == "Hamming":
-                framed_data = ce.hamming(framed_data)
-                pass
+        if error_method == "Bit de paridade":
+            framed_data = ce.bit_parity(framed_data)
+        elif error_method == "CRC-32":
+            framed_data = ce.crc_checksum(framed_data)
+            pass
+        elif error_method == "Hamming":
+            framed_data = ce.hamming(framed_data)
+            pass
 
         # Crie uma instância do receptor compartilhado
         receiver = rc.Receiver()
@@ -185,71 +179,86 @@ class MainWindow(Gtk.Window):
             return
 
         # Espere os dados serem recebidos (timeout de 5 segundos)
-        if receiver.data_ready.wait(timeout=5):
-            received_data = receiver.sent_data
-            
-            # Agora você pode usar received_bits no resto do processamento
-            buffer = self.output_text.get_buffer()
-            buffer.insert(buffer.get_end_iter(), f"\nDados recebidos: {received_data}\n")
-            
-        else:
-            buffer = self.output_text.get_buffer()
-            buffer.insert(buffer.get_end_iter(), "\nTimeout: Nenhum dado recebido!\n")
+        receiver.data_ready.wait(timeout=5)
+        received_data = receiver.sent_data
 
-        #Detecção do erro e decodificação
-        if error_detection:
-            if error_method == "Bit de paridade":
-                decoded_data = decode_ce.verifica_bit_parity(receiver.sent_data)
-            elif error_method == "CRC-32":
-                decoded_data = decode_ce.verifica_crc(receiver.sent_data)
-                pass
-            elif error_method == "Hamming":
-                decoded_data = decode_ce.corr_haming(receiver.sent_data)
-                pass
-
+        #Detecção e correção do erro
+        if error_method == "Bit de paridade":
+            error_type, corrected_data = decode_ce.verifica_bit_parity(received_data)
+        elif error_method == "CRC-32":
+            error_type, corrected_data = decode_ce.verifica_crc(received_data)
+            pass
+        elif error_method == "Hamming":
+            corrected_data = decode_ce.corr_haming(framing_method, received_data)
+            pass
+        
+        #Desenquadramento da mensagem
+        if framing_method == "Contagem de caracteres":
+            decoded_data = decode_ce.decode_charactere_count(corrected_data)
+            pass
+        elif framing_method == "Enquadramento com FLAG e byte stuffing":
+            decoded_data = decode_ce.decode_byte_insertion(corrected_data)
+        elif framing_method == "Enquadramento com FLAG e bit stuffing":
+            decoded_data = decode_ce.decode_bit_insertion(corrected_data)
+            print(decoded_data)
+            pass
 
         # Mostrar sequência binária na saída
         buffer = self.output_text.get_buffer()
         buffer.set_text(f"Mensagem original: {message}\n\n")
         buffer.insert(buffer.get_end_iter(), f"Sequência binária original:\n {binary_sequence}\n\n")
         buffer.insert(buffer.get_end_iter(), f"Sequência binária enquadrada enviada:\n {framed_data}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária recebida:\n {received_data}\n")
-        buffer.insert(buffer.get_end_iter(), f"Posição do erro:\n {receiver.changed_bit_position}\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequencia autenticada:\n {decoded_data}\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária recebida:\n {received_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Posição do erro:\n {receiver.changed_bit_position}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequencia verificada:\n {corrected_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Mensagem decodificada:\n {decoded_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"\nErro encontrado:\n {error_type}\n")
 
         # Executar modulações
         if digital_mod:
+            signal = None
             if digital_mod == "NRZ-Polar":
-                signal = cf.main(digital_mod, analog_mod = None, decoded_data)
+                signal = cf.nrz_modulation(framed_data)
+
             elif digital_mod == "Manchester":
-                signal = cf.manchester_modulation(bit_sequence)
+                signal = cf.manchester_modulation(framed_data)
+
             elif digital_mod == "Bipolar":
-                signal = cf.bipolar_modulation(bit_sequence)
-            
+                signal = cf.bipolar_modulation(framed_data)
+
             if signal is not None:
-                self.plot_digital_signal(signal, time, digital_mod)
+                self.plot_digital_signal(signal, digital_mod)
         
         if analog_mod:
             analog_signal = None
             if analog_mod == "ASK":
-                analog_signal = cf.ask_modulation(1, 1, bit_sequence)
+                analog_signal = cf.ask_modulation(1, 1, framed_data)
             if analog_mod == "FSK":
-                analog_signal = cf.fsk_modulation(1, 1, 2, bit_sequence)
+                analog_signal = cf.fsk_modulation(1, 1, 2, framed_data)
             if analog_mod == "8QAM":
-                analog_signal = cf.qam8_modulation(1, 2, 1, bit_sequence)
+                analog_signal = cf.qam8_modulation(1, 2, 1, framed_data)
 
             if analog_signal is not None:
                 self.plot_analog_signal(analog_signal, analog_mod)
     
-    def plot_digital_signal(self, signal, time, title):
+    def plot_digital_signal(self, signal, title):
         fig = plt.Figure(figsize=(5, 3), dpi=100)
         ax = fig.add_subplot(111)
-        ax.plot(time, signal, drawstyle="steps-pre")
+         
+        if title == "Manchester": 
+            signal_time = len(signal) // 2
+        else: 
+            signal_time = len(signal)
+        x = np.linspace(0, signal_time, len(signal), endpoint=False)
+
+        ax.plot(x, signal, drawstyle="steps-pre")
         ax.set_title(f"Modulação Digital {title}")
         ax.set_xlabel("Tempo")
         ax.set_ylabel("Amplitude")
-        ax.set_xticks(np.arange(0, len(time), 1))
-        for i in time:
+        ax.set_xticks(np.arange(0, signal_time + 1))
+        ax.set_xlim(0, signal_time)
+        
+        for i in x:
             ax.axvline(i, color="black", linestyle="--", linewidth=0.5)
         
         canvas = FigureCanvas(fig)
