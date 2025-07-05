@@ -7,6 +7,9 @@ import numpy as np
 import CamadaFisica as cf
 import CamadaEnlace as ce
 import transmissor as tm
+import Receptor as rc
+from bitarray import bitarray
+import threading
 
 class MainWindow(Gtk.Window):
     def __init__(self):
@@ -152,36 +155,69 @@ class MainWindow(Gtk.Window):
         elif framing_method == "Enquadramento com FLAG e bit stuffing":
             framed_data = ce.bit_insertion(binary_sequence)
             pass
-        
-        #Enviar a mensagem do transmissor para o servidor
-        #tm.startServer(framed_data)
+
+    # Crie uma instância do receptor compartilhado
+        receiver = rc.Receiver()
+
+        # Inicie o receptor em uma thread separada
+        receiver_thread = threading.Thread(target=receiver.TCPServer, daemon=True)
+        receiver_thread.start()
+
+        # Aguarde um breve momento para o servidor iniciar
+        import time
+        time.sleep(0.5)
+
+        # Envie os dados
+        if not tm.startServer(framed_data):
+            buffer = self.output_text.get_buffer()
+            buffer.insert(buffer.get_end_iter(), "\nErro: Falha ao transmitir dados!\n")
+            return
+
+        # Espere os dados serem recebidos (timeout de 5 segundos)
+        if receiver.data_ready.wait(timeout=5):
+            received_data = receiver.received_data
+            
+            # Converta os bytes recebidos de volta para lista de bits se necessário
+            ba = bitarray()
+            ba.frombytes(received_data)
+            bit_sequence = ba.tolist()
+            
+            # Agora você pode usar received_bits no resto do processamento
+            buffer = self.output_text.get_buffer()
+            buffer.insert(buffer.get_end_iter(), f"\nDados recebidos: {bit_sequence}\n")
+            
+            # Continue com o processamento (modulação, etc.)
+            # [...]
+        else:
+            buffer = self.output_text.get_buffer()
+            buffer.insert(buffer.get_end_iter(), "\nTimeout: Nenhum dado recebido!\n")
 
         # Aplicar detecção de erros
         if error_detection:
             if error_method == "Bit de paridade":
-                binary_sequence = ce.bit_parity(binary_sequence)
+                bit_sequence = ce.bit_parity(bit_sequence)
             elif error_method == "CRC-32":
                 # Implementar CRC-32
                 pass
             elif error_method == "Hamming":
-                binary_sequence = ce.hamming(binary_sequence)
+                bit_sequence = ce.hamming(bit_sequence)
                 pass
-        
+    
         # Mostrar sequência binária na saída
         buffer = self.output_text.get_buffer()
         buffer.set_text(f"Mensagem original: {message}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária:\n {binary_sequence}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária com enquadramento:\n {framed_data}\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária enviada:\n {framed_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária recebida:\n {bit_sequence}\n")
         
         # Executar modulações
         if digital_mod:
             signal, time = None, None
             if digital_mod == "NRZ-Polar":
-                signal = cf.nrz_modulation(binary_sequence)
+                signal = cf.nrz_modulation(bit_sequence)
             elif digital_mod == "Manchester":
-                signal = cf.manchester_modulation(binary_sequence)
+                signal = cf.manchester_modulation(bit_sequence)
             elif digital_mod == "Bipolar":
-                signal = cf.bipolar_modulation(binary_sequence)
+                signal = cf.bipolar_modulation(bit_sequence)
             
             if signal is not None:
                 self.plot_digital_signal(signal, time, digital_mod)
@@ -189,11 +225,11 @@ class MainWindow(Gtk.Window):
         if analog_mod:
             analog_signal = None
             if analog_mod == "ASK":
-                analog_signal = cf.ask_modulation(1, 1, binary_sequence)
+                analog_signal = cf.ask_modulation(1, 1, bit_sequence)
             if analog_mod == "FSK":
-                analog_signal = cf.fsk_modulation(1, 1, 2, binary_sequence)
+                analog_signal = cf.fsk_modulation(1, 1, 2, bit_sequence)
             if analog_mod == "8QAM":
-                analog_signal = cf.qam8_modulation(1, 2, 1, binary_sequence)
+                analog_signal = cf.qam8_modulation(1, 2, 1, bit_sequence)
 
             if analog_signal is not None:
                 self.plot_analog_signal(analog_signal, analog_mod)
