@@ -53,3 +53,70 @@ def bit_insertion (binary_sequence):
         else: count = 0
 
     return flag + aux  + flag
+
+def bit_parity(binary_sequence : list [int]):
+    
+    ones = sum(binary_sequence)
+    parity_bit = 0
+
+    if ones % 2 != 0:
+        parity_bit = 1
+
+    binary_sequence.append(parity_bit)
+
+    return binary_sequence
+
+def crc_checksum(data, polinomio):
+    
+    # converte os dados e o polinomio para listas:
+    data_bits = [int(bit) for bit in data]
+    polinomio_bits = [int(bit) for bit in polinomio]
+
+    # grau do polinomio:
+    polinomio_grau = len(polinomio_bits) - 1
+
+    # adiciona um numero de zeros a data igual ao grau do polinomio:
+    data_aumentada = data_bits + [0] * polinomio_grau
+
+    # XOR da data com o polinomio
+    # variavel temporaria para nao alterar os dados originais
+    data_atual = list(data_aumentada)
+
+    for i in range(len(data_bits)):
+        # se o primeiro bit for 1, realiza a operação XOR
+        if data_atual[i] == 1:
+            for j in range(len(polinomio_bits)):
+                # XOR do bit atual dos dados com o bit correspondente do polinomio
+                data_atual[i + j] ^= polinomio_bits[j]
+
+    # o CRC é o resto dessa divisao
+    # ou seja, são os últimos 'polinomio_grau' bits
+    crc_resto = data_atual[-polinomio_grau:]
+    return "".join(str(bit) for bit in crc_resto)
+
+def hamming(binary_sequence: list [int]):
+    #Hamming 7/4
+    
+    hamming_byte=[]
+    aux=[]
+
+    # Esse laço de repetição vai dividir a sequencia binaria em nibbles, 
+    # para que adicione 3 bits de paridades 2^^n resultando em 7 bits totais
+    for i in range (0, len(binary_sequence),4):
+        nibble = binary_sequence[i:i+4]
+
+        if len(nibble) < 4 :
+            nibble.extend([0] * (4-len(nibble)))        # Verificação se a binary_sequence é multiplo de 4
+
+        # (p1,p2,m3,p4,m5,m6,m7)
+        # (      n0,  ,n1,n2,n3)
+
+        p1=  (nibble[0] ^ nibble[1] ^ nibble[3])
+        p2=  (nibble[0] ^ nibble[2] ^ nibble[3])        # Calcula o bit de paridade
+        p4=  (nibble[1] ^ nibble[2] ^ nibble[3])
+
+        byte= [p1,p2,nibble[0],p4,nibble[1],nibble[2],nibble[3]]    # byte resultante
+        
+        hamming_byte.extend(byte)
+
+    return hamming_byte

@@ -15,7 +15,7 @@ def manchester_modulation (bit_stream):
 
 def bipolar_modulation (bit_stream):
     signal=[]
-    last_bit = -1 # Definir um marcador de polaridade do ultimo bit
+    last_bit = -1                   # Definir um marcador de polaridade do ultimo bit
     
     for bit in bit_stream:
         if bit == 1:
