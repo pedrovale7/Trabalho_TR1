@@ -40,7 +40,7 @@ def nrz_modulation(bit_stream):
         else:
             signal.extend([-1])  # -V para 0
 
-    return signal [+1 -1 +1 -1]
+    return signal 
 
 def ask_modulation(amplitude, frequency, bit_stream):
 

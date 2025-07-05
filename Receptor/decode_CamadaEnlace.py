@@ -1,4 +1,5 @@
 from bitarray import bitarray
+import random
 
 def text_from_bits(bits: list[int], enconding = "utf-8", errors = "surrogatepass" ):
     
@@ -84,22 +85,68 @@ def bit_parity(binary_sequence : list [int]):
 
 def hamming(binary_sequence: list [int]):
     #Hamming 7/4
-
-    hamming_sequence = []
+    
+    hamming_byte=[]
+    aux=[]
+    # Esse laço de repetição vai dividir a sequencia binaria em nibbles, 
+    # para que adicione 3 bits de paridades 2^^n resultando em 7 bits totais
     for i in range (0, len(binary_sequence),4):
         nibble = binary_sequence[i:i+4]
 
         if len(nibble) < 4 :
-            nibble.extend([0] * (4-len(nibble)))
+            nibble.extend([0] * (4-len(nibble)))        # Verificação se a binary_sequence é multiplo de 4
 
         # (p1,p2,m3,p4,m5,m6,m7)
         # (      n0,  ,n1,n2,n3)
 
-        p=  [(nibble[0]^nibble[1]^nibble[3]),
-            (nibble[0]^nibble[2]^nibble[3]),
-            (nibble[1]^nibble[2]^nibble[3])]
+        p1=  (nibble[0] ^ nibble[1] ^ nibble[3])
+        p2=  (nibble[0] ^ nibble[2] ^ nibble[3])        # Calcula o bit de paridade
+        p4=  (nibble[1] ^ nibble[2] ^ nibble[3])
 
-        bits= [p[0],p[1],nibble[0],p[2],nibble[1],nibble[2],nibble[3]]
-        hamming_sequence.extend(bits)
+        byte= [p1,p2,nibble[0],p4,nibble[1],nibble[2],nibble[3]]    # byte resultante
+        
+        hamming_byte.extend(byte)
 
-    return hamming_sequence
+    with_error = False
+    for i in range(0, len(hamming_byte)):
+        if random.randint(0, 100) <= 5:
+            if hamming_byte[i] == 1:
+                hamming_byte[i] = 0
+                with_error = True
+                
+            else:
+                hamming_byte[i] = 1
+            break
+    if with_error:
+        print(f"Foi adicionado bits com erro ", hamming_byte) 
+    else: 
+        print("Sem erros")
+    return hamming_byte
+
+
+def corr_haming(binary_sequence):
+
+    bits=hamming(binary_sequence)
+    decode=[]
+    hamming_sequence = []
+
+    for i in range(0,len(bits),7):
+        aux = list(bits[i:i+7])
+        t1 = str((aux[0] ^ aux[2] ^ aux[4] ^ aux[6])%2)   # | LSB   Calcula a posição onde aconteceu o erro
+        t2 = str((aux[1] ^ aux[2] ^ aux[5] ^ aux[6])%2)   # |       por meio da aplicação de XOR
+        t3 = str((aux[3]^ aux[4]^ aux[5] ^ aux[6])%2)     # v MSB
+
+        error = int(t3+t2+t1,2)                               # concatena os erros, se achar algum erro, error !=0
+        if error != 0:                                         
+            aux[error-1] = 1-aux[error-1]
+            decode = [aux[2],aux[4],aux[5],aux[6]] 
+            hamming_sequence.extend(decode)          
+        else: 
+            decode =[aux[2],aux[4],aux[5],aux[6]]
+            hamming_sequence.extend(decode)
+
+    if len(hamming_sequence)< len(binary_sequence):
+        return hamming_sequence[:len(hamming_sequence)]
+    return hamming_sequence [:len(binary_sequence)]
+
+print(corr_haming([0, 1, 1, 0, 1, 0, 1, 0]))
