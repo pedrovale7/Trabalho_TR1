@@ -8,8 +8,8 @@ import CamadaFisica as cf
 import CamadaEnlace as ce
 import transmissor as tm
 import Receptor as rc
-from bitarray import bitarray
 import threading
+import decode_CamadaEnlace as decode_ce
 
 class MainWindow(Gtk.Window):
     def __init__(self):
@@ -155,8 +155,19 @@ class MainWindow(Gtk.Window):
         elif framing_method == "Enquadramento com FLAG e bit stuffing":
             framed_data = ce.bit_insertion(binary_sequence)
             pass
+        
+        # Aplica o formato para detecção e correção de erro
+        if error_detection:
+            if error_method == "Bit de paridade":
+                framed_data = ce.bit_parity(framed_data)
+            elif error_method == "CRC-32":
+                framed_data = ce.crc_checksum(framed_data)
+                pass
+            elif error_method == "Hamming":
+                framed_data = ce.hamming(framed_data)
+                pass
 
-    # Crie uma instância do receptor compartilhado
+        # Crie uma instância do receptor compartilhado
         receiver = rc.Receiver()
 
         # Inicie o receptor em uma thread separada
@@ -175,45 +186,41 @@ class MainWindow(Gtk.Window):
 
         # Espere os dados serem recebidos (timeout de 5 segundos)
         if receiver.data_ready.wait(timeout=5):
-            received_data = receiver.received_data
-            
-            # Converta os bytes recebidos de volta para lista de bits se necessário
-            ba = bitarray()
-            ba.frombytes(received_data)
-            bit_sequence = ba.tolist()
+            received_data = receiver.sent_data
             
             # Agora você pode usar received_bits no resto do processamento
             buffer = self.output_text.get_buffer()
-            buffer.insert(buffer.get_end_iter(), f"\nDados recebidos: {bit_sequence}\n")
+            buffer.insert(buffer.get_end_iter(), f"\nDados recebidos: {received_data}\n")
             
-            # Continue com o processamento (modulação, etc.)
-            # [...]
         else:
             buffer = self.output_text.get_buffer()
             buffer.insert(buffer.get_end_iter(), "\nTimeout: Nenhum dado recebido!\n")
 
-        # Aplicar detecção de erros
+        #Detecção do erro e decodificação
         if error_detection:
             if error_method == "Bit de paridade":
-                bit_sequence = ce.bit_parity(bit_sequence)
+                decoded_data = decode_ce.verifica_bit_parity(receiver.sent_data)
             elif error_method == "CRC-32":
-                # Implementar CRC-32
+                decoded_data = decode_ce.verifica_crc(receiver.sent_data)
                 pass
             elif error_method == "Hamming":
-                bit_sequence = ce.hamming(bit_sequence)
+                decoded_data = decode_ce.corr_haming(receiver.sent_data)
                 pass
-    
+
+
         # Mostrar sequência binária na saída
         buffer = self.output_text.get_buffer()
         buffer.set_text(f"Mensagem original: {message}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária enviada:\n {framed_data}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária recebida:\n {bit_sequence}\n")
-        
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária original:\n {binary_sequence}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária enquadrada enviada:\n {framed_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária recebida:\n {received_data}\n")
+        buffer.insert(buffer.get_end_iter(), f"Posição do erro:\n {receiver.changed_bit_position}\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequencia autenticada:\n {decoded_data}\n")
+
         # Executar modulações
         if digital_mod:
-            signal, time = None, None
             if digital_mod == "NRZ-Polar":
-                signal = cf.nrz_modulation(bit_sequence)
+                signal = cf.main(digital_mod, analog_mod = None, decoded_data)
             elif digital_mod == "Manchester":
                 signal = cf.manchester_modulation(bit_sequence)
             elif digital_mod == "Bipolar":
