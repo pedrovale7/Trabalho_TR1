@@ -22,12 +22,12 @@ class Receiver:
                 self.received_data = conn.recv(1024)
                 print(f"Dados recebidos: {self.received_data}")
 
-                #pega a informação recebida e transforma em trem de bits
+                #pega a informação recebida em bytes e transforma em trem de bits
                 byte_to_bit = bitarray()
                 byte_to_bit.frombytes(self.received_data)
                 self.sent_data = byte_to_bit.tolist()
                 
-                #adiciona erro através de flip aleatório de bits
+                # Adiciona erro através de flip aleatório de bits
                 for i in range(0, len(self.sent_data)):
                     if random.randint(0, 100) <= 5:
                         self.changed_bit_position = i+1

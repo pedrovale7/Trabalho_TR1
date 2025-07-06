@@ -30,30 +30,29 @@ def bipolar_modulation (bit_stream):
 
     return signal
 
-#Jose Artur - 180020439
 def nrz_modulation(bit_stream):
     
-    signal = []
+    signal = [] # Cria uma lista de sinais
     for bit in bit_stream:
         if bit == 1:
-            signal.extend([1])   # +V para 1
+            signal.extend([1])   # Adiciona um +V para cada bit igual a 1
         else:
-            signal.extend([-1])  # -V para 0
+            signal.extend([-1])  # Adiciona um -V para cada bit igual a 0
 
     return signal 
 
 def ask_modulation(amplitude, frequency, bit_stream):
 
     signal_size = len(bit_stream)
-    signal = np.zeros(signal_size * 100)  
+    signal = np.zeros(signal_size * 100)  # Cria um sinal com 100 espaços para cada bit da mensagem a ser enviada
 
-    for i in range(signal_size):
+    for i in range(signal_size): 
         if bit_stream[i] == 1 : 
             for j in range(100):
-                signal[(i * 100) + j] = amplitude * np.sin(2 * np.pi * frequency * j / 100)
+                signal[(i * 100) + j] = amplitude * np.sin(2 * np.pi * frequency * j / 100) # Cria uma onda para cada bit igual a 1
         else:
             for j in range(100):
-                signal[(i * 100) + j] = 0
+                signal[(i * 100) + j] = 0 # Cria uma ausência de sinal para cada bit igual a 0
 
     return signal
 

@@ -1,5 +1,3 @@
-import random
-
 def decode_nrz_polar(bit_stream):
 
     demodulate_bit_stream=[]
@@ -29,32 +27,12 @@ def decode_bipolar (bit_stream):
 
     return demodulate_bit_stream
 
-def main(digital_demodulation : str ,analogic_demodulation: str, binary_input: str):
+def main(digital_demodulation : str, binary_input: list [int]):
 
-    binary_sequence =[int(bit) for bit in binary_input]     # Transformar a sequencia de bits em inteiros
-
-    # Escolhendo a modulação por Portadora
-    #if (analogic_demodulation == "ASK"):
-     #   analogic_signal=ask_demodulation(1, 1, binary_sequence)
-    #elif(analogic_demodulation == "FSK"):
-     #   analogic_signal=fsk_demodulation(1, 2, 1,binary_sequence)
-    #elif(analogic_demodulation == "8QAM"):
-     #   analogic_signal=qam8_demodulation(0.5, 1.0, 1, binary_sequence)
-
-
-    #if(analogic_demodulation != None):
-     #   plt.figure(figsize=(10,4))
-      #  plt.plot(analogic_signal)
-       # plt.title(f"Sinal demodulado por {analogic_demodulation}")
-        #plt.xlabel("Amostras")
-        #plt.ylabel("Amplitude")
-        #plt.show()
-        #plt.close()
-
-    # Escolha do Metodos de Modulação Digital
+    # Escolha do Metodos de demodulação Digital
     if (digital_demodulation == "NRZ-Polar"):
-        signal = decode_nrz_polar(binary_sequence)
+        signal = decode_nrz_polar(binary_input)
     elif (digital_demodulation == "Manchester"):
-        signal = decode_manchester(binary_sequence)
+        signal = decode_manchester(binary_input)
     elif(digital_demodulation == "Bipolar"):
-        signal= decode_bipolar(binary_sequence)
+        signal= decode_bipolar(binary_input)
