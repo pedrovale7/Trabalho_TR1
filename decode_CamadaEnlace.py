@@ -93,13 +93,16 @@ def verifica_crc(binary_sequence: list[int]):
     # 'binary_sequence'  é o quadro COMPLETO recebido (dados + CRC).
     # chama crc_checksum para calcular o RESTO da divisão DESSE quadro
     # esse RESTO deve ser igual a ZERO se não houver erro
+
+    received_data_portion = binary_sequence[:-polinomio_grau]
+
     resto = ce.crc_checksum(binary_sequence) 
     
     if not (all(bit == 0 for bit in resto)):
         error_verif = "Erro detectado - CRC"
-        return error_verif, binary_sequence
+        return error_verif, received_data_portion
     else:
-        return "OK", binary_sequence
+        return "OK", received_data_portion
 
 
 def corr_haming(framing_method, binary_sequence: list[int]):                         # Função que faz a correção do erro
