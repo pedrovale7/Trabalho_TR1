@@ -66,34 +66,34 @@ def bit_parity(binary_sequence : list [int]):
 
     return binary_sequence
 
-def crc_checksum(data: list [int]):
-    
-    # converte os dados e o polinomio para listas:
-    data_bits = data
-    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 1, 1]
-
-    # grau do polinomio:
+def crc_checksum(trem_a_ser_dividido: list[int]): # função que faz o XOR
+    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1] # Polinômio CRC-32
     polinomio_grau = len(polinomio_bits) - 1
 
-    # adiciona um numero de zeros a data igual ao grau do polinomio:
-    data_aumentada = data_bits + [0] * polinomio_grau
+    trem_atual_aux = list(trem_a_ser_dividido) 
 
-    # XOR da data com o polinomio
-    # variavel temporaria para nao alterar os dados originais
-    data_atual = data_aumentada
-
-    for i in range(len(data_bits)):
-        # se o primeiro bit for 1, realiza a operação XOR
-        if data_atual[i] == 1:
+    for i in range(len(trem_atual_aux) - polinomio_grau):
+        if trem_atual_aux[i] == 1:
             for j in range(len(polinomio_bits)):
-                # XOR do bit atual dos dados com o bit correspondente do polinomio
-                data_atual[i + j] ^= polinomio_bits[j]
+                trem_atual_aux[i + j] ^= polinomio_bits[j]
 
-    # o CRC é o resto dessa divisao
-    # ou seja, são os últimos 'polinomio_grau' bits
-    crc_resto = data_atual[-polinomio_grau:]
-    data_bits.append(crc_resto)
-    return data_atual
+    crc_resto = trem_atual_aux[-polinomio_grau:]
+    return crc_resto
+
+def prepara_CRC_para_transmissao(dados_originais: list[int]): 
+    #prepara corretamente o quadro para enviar ao receptor
+    polinomio_grau = 32 # Grau do polinômio CRC-32
+
+    # anexa zeros aos DAODS ORIGINAIS
+    dados_com_zeros_para_calculo = list(dados_originais) + [0] * polinomio_grau
+
+    # chama crc_checksum para calcular o CRC (utilizando dados COM ZEROS ANEXADOS)
+    crc_calculado = crc_checksum(dados_com_zeros_para_calculo) 
+
+    # quadro final será (DADOS ORIGINAIS) + (CRC CALCULADO)
+    quadro_para_enviar = list(dados_originais) + crc_calculado
+    
+    return quadro_para_enviar
 
 def hamming(binary_sequence: list [int]):
     #Hamming 7/4
