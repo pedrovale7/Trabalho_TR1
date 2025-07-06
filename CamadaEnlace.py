@@ -67,7 +67,7 @@ def bit_parity(binary_sequence : list [int]):
     return binary_sequence
 
 def crc_checksum(trem_a_ser_dividido: list[int]): # função que faz o XOR
-    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 1, 1] # Polinômio CRC-8 
+    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1] # Polinômio CRC-32
     polinomio_grau = len(polinomio_bits) - 1
 
     trem_atual_aux = list(trem_a_ser_dividido) 
@@ -82,7 +82,7 @@ def crc_checksum(trem_a_ser_dividido: list[int]): # função que faz o XOR
 
 def prepara_CRC_para_transmissao(dados_originais: list[int]): 
     #prepara corretamente o quadro para enviar ao receptor
-    polinomio_grau = 8 # Grau do polinômio CRC-8
+    polinomio_grau = 32 # Grau do polinômio CRC-32
 
     # anexa zeros aos DAODS ORIGINAIS
     dados_com_zeros_para_calculo = list(dados_originais) + [0] * polinomio_grau
