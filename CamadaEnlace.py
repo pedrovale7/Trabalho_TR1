@@ -66,7 +66,36 @@ def bit_parity(binary_sequence : list [int]):
 
     return binary_sequence
 
-def crc_checksum(data: list [int]):
+def crc_checksum(trem_a_ser_dividido: list[int]): # função que faz o XOR
+    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 1, 1] # Polinômio CRC-8 
+    polinomio_grau = len(polinomio_bits) - 1
+
+    trem_atual_aux = list(trem_a_ser_dividido) 
+
+    for i in range(len(trem_atual_aux) - polinomio_grau):
+        if trem_atual_aux[i] == 1:
+            for j in range(len(polinomio_bits)):
+                trem_atual_aux[i + j] ^= polinomio_bits[j]
+
+    crc_resto = trem_atual_aux[-polinomio_grau:]
+    return crc_resto
+
+def prepara_CRC_para_transmissao(dados_originais: list[int]): 
+    #prepara corretamente o quadro para enviar ao receptor
+    polinomio_grau = 8 # Grau do polinômio CRC-8
+
+    # anexa zeros aos DAODS ORIGINAIS
+    dados_com_zeros_para_calculo = list(dados_originais) + [0] * polinomio_grau
+
+    # chama crc_checksum para calcular o CRC (utilizando dados COM ZEROS ANEXADOS)
+    crc_calculado = crc_checksum(dados_com_zeros_para_calculo) 
+
+    # quadro final será (DADOS ORIGINAIS) + (CRC CALCULADO)
+    quadro_para_enviar = list(dados_originais) + crc_calculado
+    
+    return quadro_para_enviar
+
+"""def crc_checksum(data: list [int]):
     
     # converte os dados e o polinomio para listas:
     data_bits = data
@@ -94,6 +123,7 @@ def crc_checksum(data: list [int]):
     crc_resto = data_atual[-polinomio_grau:]
     data_bits.append(crc_resto)
     return data_atual
+"""
 
 def hamming(binary_sequence: list [int]):
     #Hamming 7/4

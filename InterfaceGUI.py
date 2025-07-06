@@ -154,7 +154,7 @@ class MainWindow(Gtk.Window):
         if error_method == "Bit de paridade":
             framed_data = ce.bit_parity(framed_data)
         elif error_method == "CRC-32":
-            framed_data = ce.crc_checksum(framed_data)
+            framed_data = ce.prepara_CRC_para_transmissao(framed_data)
             pass
         elif error_method == "Hamming":
             framed_data = ce.hamming(framed_data)
