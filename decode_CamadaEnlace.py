@@ -95,10 +95,12 @@ def verifica_crc(binary_sequence: list[int]):
     # a verificaçao acontece da mesma forma que o checksum(XOR)
     # se o resto for tudo 0 significa que está sem erro
     resto = ce.crc_checksum(binary_sequence)
-    if not (all(bit == '0' for bit in resto)):
+    # if not (all(bit == '0' for bit in resto)): # Original: comparação com string '0'
+    if not (all(bit == 0 for bit in resto)): # Corrigido: comparação com inteiro 0
         error_verif = "Erro detectado - CRC"
         return error_verif, binary_sequence
-
+    else: 
+        return "OK", binary_sequence
 
 def corr_haming(framing_method, binary_sequence: list[int]):                         # Função que faz a correção do erro
                                                           # da sequencia de hamming

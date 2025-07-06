@@ -70,7 +70,7 @@ def crc_checksum(data):
     
     # converte os dados e o polinomio para listas:
     data_bits = [int(bit) for bit in data]
-    polinomio_bits = [0, 0, 0, 0, 0, 1, 1, 1]
+    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 1, 1] # Corrigido para CRC-8 (0x07) em formato de 9 bits
 
     # grau do polinomio:
     polinomio_grau = len(polinomio_bits) - 1
