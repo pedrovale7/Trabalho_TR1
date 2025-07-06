@@ -95,8 +95,11 @@ def verifica_crc(binary_sequence: list[int]):
     # a verificaçao acontece da mesma forma que o checksum(XOR)
     # se o resto for tudo 0 significa que está sem erro
     resto = ce.crc_checksum(binary_sequence)
-    if not (all(bit == '0' for bit in resto)):
+    if not (all(bit == 0 for bit in resto)):
         error_verif = "Erro detectado - CRC"
+        return error_verif, binary_sequence
+    else:
+        error_verif = "OK"
         return error_verif, binary_sequence
 
 

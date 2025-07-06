@@ -66,11 +66,11 @@ def bit_parity(binary_sequence : list [int]):
 
     return binary_sequence
 
-def crc_checksum(data):
+def crc_checksum(data: list [int]):
     
     # converte os dados e o polinomio para listas:
-    data_bits = [int(bit) for bit in data]
-    polinomio_bits = [0, 0, 0, 0, 0, 1, 1, 1]
+    data_bits = data
+    polinomio_bits = [1, 0, 0, 0, 0, 0, 1, 1, 1]
 
     # grau do polinomio:
     polinomio_grau = len(polinomio_bits) - 1
@@ -80,7 +80,7 @@ def crc_checksum(data):
 
     # XOR da data com o polinomio
     # variavel temporaria para nao alterar os dados originais
-    data_atual = list(data_aumentada)
+    data_atual = data_aumentada
 
     for i in range(len(data_bits)):
         # se o primeiro bit for 1, realiza a operação XOR
@@ -92,7 +92,8 @@ def crc_checksum(data):
     # o CRC é o resto dessa divisao
     # ou seja, são os últimos 'polinomio_grau' bits
     crc_resto = data_atual[-polinomio_grau:]
-    return crc_resto
+    data_bits.append(crc_resto)
+    return data_atual
 
 def hamming(binary_sequence: list [int]):
     #Hamming 7/4
