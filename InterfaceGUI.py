@@ -1,6 +1,6 @@
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 import numpy as np
@@ -94,11 +94,11 @@ class MainWindow(Gtk.Window):
         self.framing_combo.set_active(0)
         self.grid.attach(self.framing_combo, 1, 3, 2, 1)
         
-        # Label para métodos de enquadramento
+        # Label para métodos de detecção de erro
         framing_label = Gtk.Label(label="Método de detecção de erro:")
         self.grid.attach(framing_label, 0, 4, 1, 1)
 
-        # Combo box para seleção de método de detecção
+        # Combo box para seleção de método de detecção de erro
         self.error_combo = Gtk.ComboBoxText()
         self.error_combo.append_text("Bit de paridade")
         self.error_combo.append_text("CRC-32")
@@ -107,7 +107,7 @@ class MainWindow(Gtk.Window):
         self.grid.attach(self.error_combo, 1, 4, 2, 1)
         
     def create_output_section(self):
-        # Scrolled window para a saída
+        # Scrolled window para as saídas de texto
         scrolled_window = Gtk.ScrolledWindow()
         
         self.output_text = Gtk.TextView()
@@ -137,7 +137,6 @@ class MainWindow(Gtk.Window):
         self.process_message(message, digital_mod, analog_mod, framing_method, error_method)
         
     def process_message(self, message, digital_mod, analog_mod, framing_method, error_method):
-        error_type = None
         # Converter mensagem para bits
         binary_sequence = ce.convert_to_bytes(message)
         
@@ -161,18 +160,18 @@ class MainWindow(Gtk.Window):
             framed_data = ce.hamming(framed_data)
             pass
 
-        # Crie uma instância do receptor compartilhado
+        # Cria uma instância do receptor compartilhado
         receiver = rc.Receiver()
 
-        # Inicie o receptor em uma thread separada
+        # Inicia o receptor em uma thread separada
         receiver_thread = threading.Thread(target=receiver.TCPServer, daemon=True)
         receiver_thread.start()
 
-        # Aguarde um breve momento para o servidor iniciar
+        # Aguarda um breve momento para o servidor iniciar
         import time
         time.sleep(0.5)
 
-        # Envie os dados
+        # Envia os dados do transmissor para o receptor
         if not tm.startServer(framed_data):
             buffer = self.output_text.get_buffer()
             buffer.insert(buffer.get_end_iter(), "\nErro: Falha ao transmitir dados!\n")
@@ -182,7 +181,8 @@ class MainWindow(Gtk.Window):
         receiver.data_ready.wait(timeout=5)
         received_data = receiver.sent_data
 
-        #Detecção e correção do erro
+        #Detecta se houve erro e no caso de Hamming corrige a mensagem
+        error_type = "Não se aplica."
         if error_method == "Bit de paridade":
             error_type, corrected_data = decode_ce.verifica_bit_parity(received_data)
         elif error_method == "CRC-32":
@@ -192,7 +192,7 @@ class MainWindow(Gtk.Window):
             corrected_data = decode_ce.corr_haming(framing_method, received_data)
             pass
         
-        #Desenquadramento da mensagem
+        #Desenquadra a mensagem e traduz de bit para texto
         if framing_method == "Contagem de caracteres":
             decoded_data = decode_ce.decode_charactere_count(corrected_data)
             pass
@@ -200,19 +200,18 @@ class MainWindow(Gtk.Window):
             decoded_data = decode_ce.decode_byte_insertion(corrected_data)
         elif framing_method == "Enquadramento com FLAG e bit stuffing":
             decoded_data = decode_ce.decode_bit_insertion(corrected_data)
-            print(decoded_data)
             pass
 
         # Mostrar sequência binária na saída
         buffer = self.output_text.get_buffer()
         buffer.set_text(f"Mensagem original: {message}\n\n")
         buffer.insert(buffer.get_end_iter(), f"Sequência binária original:\n {binary_sequence}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequência binária enquadrada enviada:\n {framed_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequência binária com os bits de verificação de erro e enquadramento enviada:\n {framed_data}\n\n")
         buffer.insert(buffer.get_end_iter(), f"Sequência binária recebida:\n {received_data}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Posição do erro:\n {receiver.changed_bit_position}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Sequencia verificada:\n {corrected_data}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"Mensagem decodificada:\n {decoded_data}\n\n")
-        buffer.insert(buffer.get_end_iter(), f"\nErro encontrado:\n {error_type}\n")
+        buffer.insert(buffer.get_end_iter(), f"Posição do erro(para melhor visualização):\n {receiver.changed_bit_position}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Sequencia verificada e corrigida:\n {corrected_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"Mensagem decodificada de volta para texto:\n {decoded_data}\n\n")
+        buffer.insert(buffer.get_end_iter(), f"\nErro encontrado ou não:\n {error_type}\n")
 
         # Executar modulações
         if digital_mod:
@@ -241,6 +240,7 @@ class MainWindow(Gtk.Window):
             if analog_signal is not None:
                 self.plot_analog_signal(analog_signal, analog_mod)
     
+    #Criação dos gráficos
     def plot_digital_signal(self, signal, title):
         fig = plt.Figure(figsize=(5, 3), dpi=100)
         ax = fig.add_subplot(111)

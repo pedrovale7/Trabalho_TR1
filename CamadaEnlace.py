@@ -56,13 +56,13 @@ def bit_insertion (binary_sequence):
 
 def bit_parity(binary_sequence : list [int]):
     
-    ones = sum(binary_sequence)
-    parity_bit = 0
+    ones = sum(binary_sequence)     # Conta a quantidade de 1s 
+    parity_bit = 0                  # Define o bit de paridade
 
-    if ones % 2 != 0:
-        parity_bit = 1
+    if ones % 2 != 0:               # Se a quantidade de 1s for par, o bit de paridade é igual a 0
+        parity_bit = 1              # caso contrário, é igual a 1
 
-    binary_sequence.append(parity_bit)
+    binary_sequence.append(parity_bit) # Adiciona o bit de paridade ao fim do trem de bits
 
     return binary_sequence
 

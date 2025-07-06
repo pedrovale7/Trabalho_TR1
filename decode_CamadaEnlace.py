@@ -1,7 +1,7 @@
 import CamadaEnlace as ce
 from bitarray import bitarray
 
-def is_valid_utf8(byte_list):
+def is_valid_utf8(byte_list):               # Apenas verifica se o trem de bits pode ser decodificado de volta para texto através do padrão UTF-8
     try:
         bytes(byte_list).decode('utf-8')
         return True
@@ -10,17 +10,16 @@ def is_valid_utf8(byte_list):
 
 def text_from_bits(bits: list[int], enconding = "utf-8", errors = "surrogatepass" ):
     
-    array=bitarray(bits)                        # Cria um Bitarray
-    bytes=array.tobytes()                       # Converte para uma sequencia de Bytes
+    array=bitarray(bits)                                 # Cria um Bitarray
+    bytes=array.tobytes()                                # Converte para uma sequencia de Bytes
     
-    if is_valid_utf8(bytes):
-        text_output = bytes.decode(enconding,errors)# Transforma novamente em texto ASCII
+    if is_valid_utf8(bytes):                             # Verifica se a decodificação é possível
+        text_output = bytes.decode(enconding,errors)     # Transforma novamente em texto ASCII
     else:
         text_output = "Sequência de bits impossível de decodificar"    
     return text_output
 
 def decode_charactere_count(bits: list[int]):
-    print(bits)
     bits_sequence = [bits[i] for i in range(8,len(bits))] # Remover o header para ter somente a sequencia de bits
     text_output = text_from_bits(bits_sequence)           # Transformar a sequencia de bits de volta em texto
     
@@ -83,12 +82,12 @@ def decode_bit_insertion(bits:list[int]):
 
 def verifica_bit_parity(binary_sequence: list[int]):
     error_verif = None
-    parity_bit = binary_sequence[-1]
-    parity= sum(binary_sequence)%2                              # soma = 0 paridade par
-                                                                # soma = 1 paridade impar
+    parity_bit = binary_sequence[-1]                            # Verifica o último bit da sequência
+    parity= sum(binary_sequence)%2                              # Verifica se a quantidade de 1s é par ou ímpar
+
     if parity != parity_bit:
         error_verif = "Erro detectado - Bit de Paridade"
-    return error_verif, binary_sequence                                 # Remove o ultimo bit (paridade)
+    return error_verif, binary_sequence                         # Retorna se foi detectado erro
 
 def verifica_crc(binary_sequence: list[int]):
 

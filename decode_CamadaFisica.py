@@ -1,5 +1,3 @@
-import random
-
 def decode_nrz_polar(bit_stream):
 
     demodulate_bit_stream=[]
