@@ -90,6 +90,7 @@ def verifica_bit_parity(binary_sequence: list[int]):
     return error_verif, binary_sequence                         # Retorna se foi detectado erro
 
 def verifica_crc(binary_sequence: list[int]):
+    polinomio_grau = 8
     # 'binary_sequence'  é o quadro COMPLETO recebido (dados + CRC).
     # chama crc_checksum para calcular o RESTO da divisão DESSE quadro
     # esse RESTO deve ser igual a ZERO se não houver erro
